@@ -1,6 +1,6 @@
-project: rnshah9/mayhem-raptorjit
+project: raptorjit
 target: raptorjit
 
 cmds:
-  - cmd: /repo/src/raptorjit @@
+  - cmd: /repo/src/raptorjit /test.lua
     filepath: /test.lua
