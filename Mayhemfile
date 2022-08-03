@@ -2,5 +2,4 @@ project: raptorjit
 target: raptorjit
 
 cmds:
-  - cmd: /repo/src/raptorjit /test.lua
-    filepath: /test.lua
+  - cmd: /install/bin/raptorjit @@
