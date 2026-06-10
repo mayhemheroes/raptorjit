@@ -1,0 +1,5 @@
+project: raptorjit
+target: raptorjit
+
+cmds:
+  - cmd: /install/bin/raptorjit @@
