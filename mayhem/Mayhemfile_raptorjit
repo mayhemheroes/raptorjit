@@ -1,0 +1,25 @@
+project: raptorjit
+target: raptorjit
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/raptorjit/testsuite
+
+# File-input (CLI) target: feed the fuzz bytes as a Lua program file to the RaptorJIT VM.
+# RaptorJIT (a LuaJIT fork) reads the program from the CLI path argument, then LEXES (lj_lex.c),
+# PARSES (lj_parse.c) and EXECUTES it, JIT-compiling hot bytecode to native code; it also accepts
+# precompiled bytecode chunks through the bytecode loader (lj_bcread.c). So the fuzz bytes drive the
+# whole lexer + parser + bytecode-reader + VM pipeline — the natural fuzz surface. Not libFuzzer:
+# the VM binary IS the target, so the file-input target both fuzzes and serves as its own
+# single-input reproducer. @@ is the input-file placeholder.
+#
+# Ported from the old mayhemheroes integration's single target (old Mayhemfile ran
+# `/repo/src/raptorjit /test.lua`, the binary the old Dockerfile built via `make`). Same shape and
+# `target:` name (raptorjit), now pointed at the base-image build output at /mayhem/raptorjit. A
+# valid program runs to exit 0 (passing seed); malformed input is caught by RaptorJIT's own
+# lexer/parser/loader error paths. ASan is ON and HALTING (catches heap/stack overflow + UAF in the
+# lexer/parser/bytecode reader — the real attack surface); UBSan is ON and HALTING except four
+# benign, by-design LuaJIT checks relaxed in build.sh (shift/alignment/function/pointer-overflow),
+# so a real memory/UB defect terminates the process (SIGABRT) and is recorded as a crash. A weak
+# __asan_default_options(detect_leaks=0) is baked into the binary, so NO ASAN_OPTIONS is needed here.
+cmds:
+  - cmd: /mayhem/raptorjit @@
